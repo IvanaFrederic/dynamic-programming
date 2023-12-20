@@ -1,44 +1,48 @@
 class Graph:
-    def __init__(self, vertices):
-        self.vertices = vertices
+    def __init__(self):
+        self.vertices = {}
         self.edges = []
+
+    def add_vertex(self, name):
+        self.vertices[name] = len(self.vertices)
 
     def add_edge(self, start, end, weight):
         self.edges.append((start, end, weight))
 
-    def bellman_ford(self, start, end):
-        # Initialize distances array with infinity for all vertices except start
-        distances = {vertex: float('inf') for vertex in range(self.vertices)}
+    def bellman_ford(self, start):
+        distances = {vertex: float('inf') for vertex in self.vertices}
         distances[start] = 0
 
-        # Relax edges repeatedly to find the shortest paths
-        for _ in range(self.vertices - 1):
+        for _ in range(len(self.vertices) - 1):
             for start_vertex, end_vertex, weight in self.edges:
-                if distances[start_vertex] != float('inf') and distances[start_vertex] + weight < distances[end_vertex]:
+                if distances[start_vertex] + weight < distances[end_vertex]:
                     distances[end_vertex] = distances[start_vertex] + weight
 
-        # Check for negative cycles
+        # Check for negative weight cycles
         for start_vertex, end_vertex, weight in self.edges:
-            if distances[start_vertex] != float('inf') and distances[start_vertex] + weight < distances[end_vertex]:
-                print("Graph contains negative cycle, cannot find shortest path.")
-                return
+            if distances[start_vertex] + weight < distances[end_vertex]:
+                print("Graph contains a negative weight cycle. Bellman-Ford not applicable.")
+                return None
 
-        # Return the shortest distance to the end vertex
-        if distances[end] == float('inf'):
-            print(f"There is no path from vertex {start} to {end}.")
-        else:
-            return distances[end]
+        return distances
 
 # Example usage:
-graph = Graph(5)
-graph.add_edge(0, 1, 1)
-graph.add_edge(1, 2, -2)
-graph.add_edge(2, 3, 3)
-graph.add_edge(3, 4, 1)
-graph.add_edge(4, 1, -2)
+g = Graph()
+g.add_vertex('A')
+g.add_vertex('B')
+g.add_vertex('C')
+g.add_vertex('D')
 
-start_vertex = 0
-end_vertex = 4
+g.add_edge('A', 'B', 5)
+g.add_edge('A', 'C', 2)
+g.add_edge('B', 'C', 1)
+g.add_edge('B', 'D', -4)
+g.add_edge('C', 'D', 3)
 
-shortest_distance = graph.bellman_ford(start_vertex, end_vertex)
-print(f"The shortest distance from vertex {start_vertex} to {end_vertex}: {shortest_distance}")
+start_vertex = 'A'
+distances = g.bellman_ford(start_vertex)
+
+if distances is not None:
+    print(f"Shortest distances from vertex {start_vertex}:")
+    for vertex, distance in distances.items():
+        print(f"To {vertex}: {distance}")
